@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="ds/sap-horizon/tokens/fonts.css">
+<link rel="stylesheet" href="ds/sap-horizon/tokens/colors.css">
+<link rel="stylesheet" href="ds/sap-horizon/tokens/typography.css">
+<link rel="stylesheet" href="ds/sap-horizon/tokens/spacing.css">
+<link rel="stylesheet" href="ds/sap-horizon/tokens/elevation.css">
+<link rel="stylesheet" href="ds/sap-horizon/styles.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700&amp;family=Amatic+SC:wght@700&amp;display=swap">
+<script src="ds/sap-horizon/_ds_bundle.js"></script>
+<style>
+:root{--sapFontFamily:"72","72full","Assistant",Arial,sans-serif;--sapFontHeaderFamily:"72","Assistant",Arial,sans-serif;--sapButton_FontFamily:"72-SemiboldDuplex","72","Assistant",Arial,sans-serif}
+html,body{margin:0;background:var(--sapBackgroundColor)}
+*{box-sizing:border-box}
+a{color:var(--sapLinkColor);text-decoration:none}
+a:hover{text-decoration:underline}
+@keyframes scanline{0%{top:0}100%{top:100%}}
+@media print{
+  @page{size:A4;margin:10mm}
+  body *{visibility:hidden}
+  [data-print-doc],[data-print-doc] *{visibility:visible}
+  [data-print-doc]{position:absolute;top:0;right:0;left:0;box-shadow:none !important;margin:0 !important;max-width:none !important}
+  [data-no-print]{display:none !important}
+}
+</style>
+</helmet>
+<div dir="rtl" style="min-height:100vh;display:flex;flex-direction:column;background:var(--sapBackgroundColor);font-family:var(--sapFontFamily);color:var(--sapTextColor);font-size:var(--sapFontSize)">
+
+  <main style="flex:1;width:100%;max-width:1240px;margin:0 auto;padding:16px;display:flex;flex-direction:column;gap:16px">
+    <div data-no-print="1" style="background:var(--sapTileBackground,#fff);border-radius:12px;box-shadow:var(--sapContent_Shadow0);padding:16px 20px;display:flex;gap:12px;flex-wrap:wrap">
+      <sc-for list="{{ steps }}" as="s" hint-placeholder-count="3">
+        <div style="flex:1 1 220px;display:flex;align-items:center;gap:12px;min-width:0">
+          <button type="button" onClick="{{ s.go }}" title="{{ s.hint }}" style="all:unset;display:flex;align-items:center;gap:12px;cursor:{{ s.cursor }}">
+            <span style="width:32px;height:32px;flex-shrink:0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;background:{{ s.bg }};color:{{ s.fg }};border:1px solid {{ s.bd }}">
+              <sc-if value="{{ s.done }}" hint-placeholder-val="{{ false }}">
+                <x-import component-from-global-scope="SAPHorizonDesignSystem_f0bcbb.Icon" name="accept" size="14px" hint-size="14px,14px"></x-import>
+              </sc-if>
+              <sc-if value="{{ s.notDone }}" hint-placeholder-val="{{ true }}">{{ s.num }}</sc-if>
+            </span>
+            <span style="display:flex;flex-direction:column;gap:2px;min-width:0">
+              <span style="font-weight:{{ s.weight }};color:var(--sapTitleColor)">{{ s.title }}</span>
+              <span style="font-size:var(--sapFontSmallSize);color:var(--sapContent_LabelColor)">{{ s.sub }}</span>
+            </span>
+          </button>
+          <sc-if value="{{ s.notLast }}" hint-placeholder-val="{{ true }}">
+            <span style="flex:1;height:1px;min-width:16px;background:{{ s.line }}"></span>
+          </sc-if>
+        </div>
+      </sc-for>
+    </div>
+
+    <!-- STEP 1 -->
+    <sc-if value="{{ isStep1 }}" hint-placeholder-val="{{ true }}">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));gap:16px;align-items:start">
+        <x-import component-from-global-scope="SAPHorizonDesignSystem_f0bcbb.Card" title="פרטי לקוח" body-style="{{ cardBody }}" hint-size="100%,420px">
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <x-import component-from-global-scope="SAPHorizonDesignSystem_f0bcbb.Input" label="שם מלא" required="{{ true }}" placeholder="{{ manualPh }}" value="{{ f.name }}" on-change="{{ on.name }}" value-state="{{ vs.name }}" value-state-text="{{ err.name }}" icon="{{ idIcon }}" hint-size="100%,58px"></x-import>
+            <x-import component-from-global-scope="SAPHorizonDesignSystem_f0bcbb.Input" label="ת.ז" required="{{ true }}" placeholder="{{ manualPh }}" value="{{ f.idNum }}" on-change="{{ on.idNum }}" value-state="{{ vs.idNum }}" value-state-text="{{ err.idNum }}" icon="{{ idIcon }}" inputmode="numeric" hint-size="100%,58px"></x-import>
+            <x-import component-from-global-scope="SAPHorizonDesignSystem_f0bcbb.Input" label="כתובת מגורים" required="{{ true }}" placeholder="{{ fromIdPh }}" read-only="{{ notScanned }}" value="{{ f.address }}" on-change="{{ on.address }}" value-state="{{ vs.address }}" value-state-text="{{ err.address }}" icon="{{ idIcon }}" hint-size="100%,58px"></x-import>
+            <div style="height:1px;background:var(--sapGroup_TitleBorderColor,#e5e5e5);margin:4px 0"></div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px">
+              <x-import component-from-global-scope="SAPHorizonDesignSystem_f0bcbb.Input" label="טלפון" required="{{ true }}" type="tel" placeholder="050-0000000" value="{{ f.phone }}" on-change="{{ on.phone }}" value-state="{{ vs.phone }}" value-state-text="{{ err.phone }}" inputmode="tel" hint-size="100%,58px"></x-import>
+              <x-import component-from-global-scope="SAPHorizonDesignSystem_f0bcbb.Input" label="דוא&quot;ל" required="{{ true }}" type="email" placeholder="name@example.com" value="{{ f.email }}" on-change="{{ on.email }}" value-state="{{ vs.email }}" value-state-text="{{ err.email }}" hint-size="100%,58px"></x-import>
+            </div>
+            <div style="font-size:var(--sapFontSmallSize);color:var(--sapContent_LabelColor)">כל השדות הם שדות חובה</div>
+          </div>
+        </x-import>
+
+        <x-import component-from-global-scope="SAPHorizonDesignSystem_f0bcbb.Card" title="תעודת זהות" subtitle="צלמו את התעודה או העלו קובץ" body-style="{{ cardBody }}" hint-size="100%,420px">
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <input ref="{{ camRef }}" type="file" accept="image/*" capture="environment" onChange="{{ onFile }}" style="display:none">
+            <input ref="{{ fileRef }}" type="file" accept="image/*,application/pdf" onChange="{{ onFile }}" style="display:none">
+
+            <sc-if value="{{ scanNone }}" hint-placeholder-val="{{ true }}">
+              <div style="aspect-ratio:1.586;border:1px dashed var(--sapField_BorderColor);border-radius:12px;background:var(--sapBackgroundColor);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center">
+                <span style="color:var(--sapContent_NonInteractiveIconColor)">
+                  <x-import component-from-global-scope="SAPHorizonDesignSystem_f0bcbb.Icon" name="business-card" size="40px" hint-size="40px,40px"></x-import>
+                </span>
+                <div style="display:flex;flex-direction:column;gap:4px">
+                  <div style="font-weight:700;font-size:16px;color:var(--sapTitleColor)">סריקת תעודת זהות</div>
+                  <div style="color:var(--sapContent_LabelColor)">הפרטים יחולצו אוטומטית מהתעודה</div>
+                </div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">
+                  <x-import component-from-global-scope="SAPHorizonDesignSystem_f0bcbb.Button" design="emphasized" icon="camera" on-click="{{ openCam }}" hint-size="140px,36px">צילום תעודה</x-import>
+                  <x-import component-from-global-scope="SAPHorizonDesignSystem_f0bcbb.Button" icon="upload" on-click="{{ openFile }}" hint-size="130px,36px">העלאת קובץ</x-import>
+                </div>
+                <sc-if value="{{ demo }}" hint-placeholder-val="{{ true }}">
+                  <x-import component-from-global-scope="SAPHorizonDesignSystem_f0bcbb.Button" design="transparent" on-click="{{ useSample }}" hint-size="140px,36px">סריקה לדוגמה</x-import>
+                </sc-if>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ hasScanView }}" hint-placeholder-val="{{ false }}">
+              <div style="position:relative;aspect-ratio:1.586;border-radius:12px;overflow:hidden;background:var(--sapBackgroundColor);border:1px solid var(--sapList_BorderColor,#e5e5e5)">
+                <sc-if value="{{ showImg }}" hint-placeholder-val="{{ false }}">
+                  <div role="img" aria-label="תעודת זהות" style="width:100%;height:100%;background-image:{{ idImgBg }};background-size:contain;background-position:center;background-repeat:no-repeat"></div>
+                </sc-if>
+                <sc-if value="{{ showPdf }}" hint-placeholder-val="{{ false }}">
+                  <div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--sapContent_LabelColor)">
+                    <x-import component-from-global-scope="SAPHorizonDesignSystem_f0bcbb.Icon" name="pdf-attachment" size="40px" hint-size="40px,40px"></x-import>
+                    <span>{{ idFileName }}</span>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ showSample }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:absolute;inset:12px;border-radius:10px;background:#eef3f7;border:1px solid #d5dde5;display:grid;grid-template-columns:28% 1fr;gap:14px;padding:14px;font-size:12px">
+                    <div style="background:#d5dde5;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#788fa6">
+                      <x-import component-from-global-scope="SAPHorizonDesignSystem_f0bcbb.Icon" name="person-placeholder" size="36px" hint-size="36px,36px"></x-import>
+                    </div>
+                    <div style="display:flex;flex-direction:column;gap:6px;min-width:0">
+                      <div style="font-weight:700;color:#556b82;letter-spacing:.02em">מדינת ישראל · תעודת זהות</div>
+                      <div style="display:flex;gap:6px"><span style="color:#788fa6">מספר זהות</span><span style="font-family:var(--sapContent_MonospaceFontFamily)">{{ sample.idNum }}</span></div>
+                      <div style="display:flex;gap:6px"><span style="color:#788fa6">שם</span><span>{{ sample.name }}</span></div>
+                      <div style="display:flex;gap:6px"><span style="color:#788fa6">כתובת</span><span>{{ sample.address }}</span></div>
+                      <div style="display:flex;gap:6px"><span style="color:#788fa6">תאריך לידה</span><span>14.03.1984</span></div>
+                    </div>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ scanning }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:absolute;inset:0;background:rgba(34,53,72,.35);display:flex;align-items:center;justify-content:center">
+                    {{ scanBeam }}
+                    <span style="background:#fff;border-radius:8px;padding:8px 14px;font-weight:600;box-shadow:var(--sapContent_Shadow1)">סורק את התעודה…</span>
+                  </div>
+                </sc-if>
+              </div>
+              <sc-if value="{{ scanDone }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;gap:10px">
+                  <x-import component-from-global-scope="SAPHorizonDesignSystem_f0bcbb.MessageStrip" design="Positive" hint-size="100%,36px">התעודה נסרקה בהצלחה. בדקו את הפרטים שחולצו.</x-import>
+                  <div style="display:flex;gap:8px;flex-wrap:wrap">
+                    <x-import component-from-global-scope="SAPHorizonDesignSystem_f0bcbb.Button" icon="camera" on-click="{{ openCam }}" hint-size="120px,36px">צילום מחדש</x-import>
+                    <x-import component-from-global-scope="SAPHorizonDesignSystem_f0bcbb.Button" design="transparent" icon="upload" on-click="{{ openFile }}" hint-size="140px,36px">העלאת קובץ אחר</x-import>
+                  </div>
+                </div>
+              </sc-if>
+            </sc-if>
+            <sc-if value="{{ scanMissing }}" hint-placeholder-val="{{ false }}">
+              <x-import component-from-global-scope="SAPHorizonDesignSystem_f0bcbb.MessageStrip" design="Negative" hint-size="100%,36px">יש לסרוק תעודת זהות לפני מעבר לשלב הבא</x-import>
+            </sc-if>
+          </div>
+        </x-import>
+      </div>
+    </sc-if>
+
+    <!-- STEP 2 -->
+    <sc-if value="{{ isStep2 }}" hint-placeholder-val="{{ false }}">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));gap:16px;align-items:start">
+        <x-import component-from-global-scope="SAPHorizonDesignSystem_f0bcbb.Card" title="רכב" subtitle="בחירת הרכב לנסיעת המבחן" body-style="{{ cardBody }}" hint-size="100%,260px">
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div style="display:flex;flex-direction:column;gap:4px">
+              <label style="font-size:var(--sapFontSmallSize);color:var(--sapContent_LabelColor)">דגם פורשה<span style="color:var(--sapNegativeColor)"> *</span></label>
+              <div style="position:relative;display:flex;align-items:center">
+                <select value="{{ car.model }}" onChange="{{ on.model }}" style="appearance:none;-webkit-appearance:none;width:100%;height:var(--sapElement_Height);padding:0 10px 0 32px;background:var(--sapField_Background);border:1px solid {{ selBd.model }};border-radius:var(--sapField_BorderCornerRadius);font-family:var(--sapFontFamily);font-size:var(--sapFontSize);color:var(--sapField_TextColor);cursor:pointer;outline-color:var(--sapContent_FocusColor)">
+                  <option value="" disabled="disabled">בחרו דגם</option>
+                  <sc-for list="{{ models }}" as="m" hint-placeholder-count="0"><option value="{{ m }}">{{ m }}</option></sc-for>
+                </select>
+                <span style="position:absolute;left:10px;pointer-events:none;color:var(--sapContent_IconColor);display:flex">
+                  <x-import component-from-global-scope="SAPHorizonDesignSystem_f0bcbb.Icon" name="slim-arrow-down" size="14px" hint-size="14px,14px"></x-import>
+                </span>
+              </div>
+              <sc-if value="{{ err2.model }}" hint-placeholder-val="{{ false }}"><span style="font-size:var(--sapFontSmallSize);color:var(--sapNegativeTextColor)">יש לבחור דגם</span></sc-if>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:4px">
+              <label style="font-size:var(--sapFontSmallSize);color:var(--sapContent_LabelColor)">מספר רישוי<span style="color:var(--sapNegativeColor)"> *</span></label>
+              <div style="position:relative;display:flex;align-items:center;opacity:{{ plateOpacity }}">
+                <select value="{{ car.plate }}" onChange="{{ on.plate }}" disabled="{{ noModel }}" style="appearance:none;-webkit-appearance:none;width:100%;height:var(--sapElement_Height);padding:0 10px 0 32px;background:var(--sapField_Background);border:1px solid {{ selBd.plate }};border-radius:var(--sapField_BorderCornerRadius);font-family:var(--sapContent_MonospaceFontFamily),var(--sapFontFamily);font-size:var(--sapFontSize);color:var(--sapField_TextColor);cursor:pointer;outline-color:var(--sapContent_FocusColor)">
+                  <option value="" disabled="disabled">{{ platePh }}</option>
+                  <sc-for list="{{ plates }}" as="p" hint-placeholder-count="0"><option value="{{ p }}">{{ p }}</option></sc-for>
+                </select>
+                <span style="position:absolute;left:10px;pointer-events:none;color:var(--sapContent_IconColor);display:flex">
+                  <x-import component-from-global-scope="SAPHorizonDesignSystem_f0bcbb.Icon" name="slim-arrow-down" size="14px" hint-size="14px,14px"></x-import>
+                </span>
+              </div>
+              <sc-if value="{{ err2.plate }}" hint-placeholder-val="{{ false }}"><span style="font-size:var(--sapFontSmallSize);color:var(--sapNegativeTextColor)">יש לבחור מספר רישוי</span></sc-if>
+            </div>
+          </div>
+        </x-import>
+
+        <x-import component-from-global-scope="SAPHorizonDesignSystem_f0bcbb.Card" title="נסיעה" subtitle="קילומטראז׳ ומועדי מסירה והחזרה" body-style="{{ cardBody }}" hint-size="100%,320px">
+          <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px">
+            <x-import component-from-global-scope="SAPHorizonDesignSystem_f0bcbb.Input" label="ק&quot;מ במסירה" required="{{ true }}" type="number" inputmode="numeric" value="{{ trip.kmOut }}" on-change="{{ on.kmOut }}" value-state="{{ vs2.kmOut }}" value-state-text="שדה חובה" hint-size="100%,58px"></x-import>
+            <x-import component-from-global-scope="SAPHorizonDesignSystem_f0bcbb.Input" label="ק&quot;מ בחזרה" type="number" inputmode="numeric" placeholder="ימולא בהחזרת הרכב" value="{{ trip.kmIn }}" on-change="{{ on.kmIn }}" value-state="{{ vs2.kmIn }}" value-state-text="נמוך מהק&quot;מ במסירה" hint-size="100%,58px"></x-import>
+            <x-import component-from-global-scope="SAPHorizonDesignSystem_f0bcbb.Input" label="תאריך מסירה" required="{{ true }}" type="date" value="{{ trip.dOut }}" on-change="{{ on.dOut }}" value-state="{{ vs2.dOut }}" value-state-text="שדה חובה" hint-size="100%,58px"></x-import>
+            <x-import component-from-global-scope="SAPHorizonDesignSystem_f0bcbb.Input" label="שעת מסירה" required="{{ true }}" type="time" value="{{ trip.tOut }}" on-change="{{ on.tOut }}" value-state="{{ vs2.tOut }}" value-state-text="שדה חובה" hint-size="100%,58px"></x-import>
+            <x-import component-from-global-scope="SAPHorizonDesignSystem_f0bcbb.Input" label="תאריך החזרה" required="{{ true }}" type="date" value="{{ trip.dIn }}" on-change="{{ on.dIn }}" value-state="{{ vs2.dIn }}" value-state-text="{{ err2.dInText }}" hint-size="100%,58px"></x-import>
+            <x-import component-from-global-scope="SAPHorizonDesignSystem_f0bcbb.Input" label="שעת החזרה" required="{{ true }}" type="time" value="{{ trip.tIn }}" on-change="{{ on.tIn }}" value-state="{{ vs2.tIn }}" value-state-text="{{ err2.tInText }}" hint-size="100%,58px"></x-import>
+          </div>
+        </x-import>
+      </div>
+    </sc-if>
+
+    <!-- STEP 3 -->
+    <sc-if value="{{ isStep3 }}" hint-placeholder-val="{{ false }}">
+      <div data-no-print="1" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <x-import component-from-global-scope="SAPHorizonDesignSystem_f0bcbb.MessageStrip" design="{{ signStripDesign }}" style="{{ stripStyle }}" hint-size="100%,36px">{{ signStripText }}</x-import>
+        <x-import component-from-global-scope="SAPHorizonDesignSystem_f0bcbb.Button" design="emphasized" icon="pdf-attachment" disabled="{{ notSigned }}" on-click="{{ printDoc }}" hint-size="160px,36px">אישור והפקת PDF</x-import>
+      </div>
+      <article data-print-doc="1" style="width:100%;max-width:880px;margin:0 auto;background:#fff;border-radius:12px;box-shadow:var(--sapContent_Shadow1);padding:40px 48px 28px;display:flex;flex-direction:column;gap:24px;color:#131e29;font-size:14px;line-height:1.55">
+        <header style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;border-bottom:2px solid #131e29;padding-bottom:16px">
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <div style="font-weight:700;font-size:22px;letter-spacing:.01em">טופס נסיעת מבחן – בדיקת רכב</div>
+            <div style="color:#556b82">אורכיד ספורטס קארס ישראל בע״מ</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px;text-align:left;font-size:13px;color:#556b82">
+            <span style="font-weight:700;letter-spacing:.18em;color:#131e29;font-size:15px">PORSCHE</span>
+            <span>מסמך מס׳ <span style="font-family:var(--sapContent_MonospaceFontFamily)">{{ docNo }}</span></span>
+            <span>הופק: {{ todayStr }}</span>
+          </div>
+        </header>
+
+        <section style="display:flex;flex-direction:column;gap:10px">
+          <div style="font-weight:700;font-size:15px">פרטי לקוח</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));border:1px solid #d9dee3;border-radius:8px;overflow:hidden">
+            <sc-for list="{{ docCustomer }}" as="r" hint-placeholder-count="5">
+              <div style="display:flex;flex-direction:column;gap:2px;padding:10px 14px;border-bottom:1px solid #eef0f2">
+                <span style="font-size:12px;color:#556b82">{{ r.k }}</span>
+                <span style="font-weight:600">{{ r.v }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+
+        <section style="display:flex;flex-direction:column;gap:10px">
+          <div style="font-weight:700;font-size:15px">פרטי רכב ונסיעה</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));border:1px solid #d9dee3;border-radius:8px;overflow:hidden">
+            <sc-for list="{{ docTrip }}" as="r" hint-placeholder-count="6">
+              <div style="display:flex;flex-direction:column;gap:2px;padding:10px 14px;border-bottom:1px solid #eef0f2">
+                <span style="font-size:12px;color:#556b82">{{ r.k }}</span>
+                <span style="font-weight:600">{{ r.v }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+
+        <section style="display:flex;flex-direction:column;gap:8px">
+          <div style="font-weight:700;font-size:15px">הצהרת הלקוח</div>
+          <p style="margin:0;text-wrap:pretty">אני החתום מטה <strong>{{ f.name }}</strong> מאשר בחתימתי את קבלת הרכב הנ"ל לפי הפרטים הנ"ל וכי האחריות על הרכב היא באחריותי הבלעדית לרבות דוחות תעבורה, תאונות, וכל היוצא בזאת בכל מהלך התקופה המפורטת הנ"ל. השתתפות עצמית במקרה של תאונה: עד {{ deductible }} ₪.</p>
+          <ul style="margin:0;padding-inline-start:20px;display:flex;flex-direction:column;gap:2px">
+            <li>ידוע לי כי הרכב מבוטח לנהגים מעל גיל 30 בלבד.</li>
+            <li>ידוע לי כי אין להיכנס עם הרכב לכבישי אגרה, וכי חל איסור מוחלט לרדת מדרך סלולה.</li>
+            <li>ידוע לי כי אין לעשן ברכב.</li>
+          </ul>
+        </section>
+
+        <section style="display:flex;flex-direction:column;gap:8px">
+          <div style="font-weight:700;font-size:15px">הסכמה לשמירת מידע</div>
+          <p style="margin:0">אני החתום מטה, מצהיר ומאשר בזאת כדלקמן:</p>
+          <ol style="margin:0;padding-inline-start:20px;display:flex;flex-direction:column;gap:2px;text-wrap:pretty">
+            <li>במסגרת נסיעת המבחן מסרתי לחברה את פרטיי האישיים, לרבות צילום תעודת זהות, לצורך זיהוי, ביצוע הנסיעה ויצירת קשר עמי.</li>
+            <li>פרטי ומידע כאמור יישמרו וינוהלו במאגר מידע כדין של החברה, וישמשו לצורך מתן שירות, עדכונים ופניות בהתאם לדין.</li>
+            <li>אני מודע לכך שלא חלה עלי כל חובה חוקית למסור מידע כלשהו.</li>
+          </ol>
+        </section>
+
+        <section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:20px">
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+              <span style="font-weight:700">חתימת הלקוח</span>
+              <span data-no-print="1">
+                <x-import component-from-global-scope="SAPHorizonDesignSystem_f0bcbb.Button" design="transparent" size="compact" icon="eraser" on-click="{{ clearSig }}" hint-size="80px,26px">ניקוי</x-import>
+              </span>
+            </div>
+            <div style="position:relative;height:150px;border:1px {{ sigBorderStyle }} {{ sigBorderColor }};border-radius:8px;background:#fafbfc;overflow:hidden">
+              <canvas ref="{{ sigRef }}" style="position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:crosshair"></canvas>
+              <sc-if value="{{ notSigned }}" hint-placeholder-val="{{ true }}">
+                <span data-no-print="1" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#8396a8;pointer-events:none">חתמו כאן באצבע או בעט</span>
+              </sc-if>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;color:#556b82;border-top:1px solid #131e29;padding-top:6px"><span>{{ f.name }} · ת.ז {{ f.idNum }}</span><span>{{ todayStr }}</span></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;align-items:center;min-height:26px"><span style="font-weight:700">חתימת יועץ המכירות</span></div>
+            <div style="position:relative;height:150px;border:1px solid #d9dee3;border-radius:8px;background:#fafbfc;display:flex;align-items:center;justify-content:center">
+              <span style="font-family:'Amatic SC',cursive;font-weight:700;font-size:52px;color:#1b3a8c;transform:rotate(-4deg)">{{ salesName }}</span>
+              <span style="position:absolute;bottom:8px;left:10px;font-size:11px;color:#556b82">נחתם דיגיטלית</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;color:#556b82;border-top:1px solid #131e29;padding-top:6px"><span>{{ salesName }} · יועץ מכירות</span><span>{{ todayStr }}</span></div>
+          </div>
+        </section>
+
+        <footer style="margin-top:8px;border-top:1px solid #d9dee3;padding-top:12px;display:flex;flex-direction:column;gap:2px;font-size:11px;color:#556b82;text-align:center;line-height:1.6">
+          <div style="font-weight:700;color:#131e29;font-size:12px">אורכיד ספורטס קארס ישראל בע״מ</div>
+          <div>הנהלה ואולם תצוגה – החושלים 8 הרצליה, מיקוד 4672408 | ת.ד. 12382 | טלפון 09-7722911 | פקס 09-7744911 | www.porsche.co.il</div>
+          <div>מרכז שירות – ז׳בוטינסקי 101 פינת אינשטיין פתח תקווה, מיקוד 4925006 | טלפון 03-9190911</div>
+        </footer>
+      </article>
+    </sc-if>
+  </main>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const CARS = {
+  '911 Carrera': ['12-345-67', '45-812-90'],
+  '911 Carrera 4 GTS': ['78-221-34'],
+  '911 Turbo S': ['33-905-18'],
+  'Taycan 4S': ['61-447-02', '61-448-15'],
+  'Taycan Turbo': ['90-113-47'],
+  'Macan Electric': ['27-650-83', '27-651-96'],
+  'Cayenne E-Hybrid': ['54-309-71'],
+  'Panamera 4': ['88-742-26']
+};
+const SAMPLE = { name: 'ישראל ישראלי', idNum: '039581246', address: 'רחוב הרצל 12, תל אביב-יפו' };
+const pad = n => String(n).padStart(2, '0');
+const isoDate = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const hhmm = d => `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+const heDate = s => { if (!s) return '—'; const [y, m, d] = s.split('-'); return `${d}/${m}/${y}`; };
+
+class Component extends DCLogic {
+  constructor(p) {
+    super(p);
+    const now = new Date(); const later = new Date(now.getTime() + 60 * 60000);
+    this.state = {
+      step: 1, scan: 'none', idImg: null, idFileName: '', isPdf: false, isSample: false,
+      f: { name: '', idNum: '', address: '', phone: '', email: '' },
+      car: { model: '', plate: '' },
+      trip: { kmOut: '', kmIn: '', dOut: isoDate(now), tOut: hhmm(now), dIn: isoDate(later), tIn: hhmm(later) },
+      tried1: false, tried2: false, signed: false,
+      docNo: 'TD-' + now.getFullYear() + '-' + String(Math.floor(1000 + Math.random() * 9000))
+    };
+    this.camRef = React.createRef(); this.fileRef = React.createRef();
+    this.sigRef = el => { if (el && el !== this.cv) { this.cv = el; this.setupSig(el); } };
+  }
+  componentWillUnmount() { clearTimeout(this.t); }
+  setupSig(cv) {
+    const fit = () => {
+      const r = cv.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+      if (!r.width) return;
+      const data = this.state.signed ? cv.toDataURL() : null;
+      cv.width = r.width * dpr; cv.height = r.height * dpr;
+      const c = cv.getContext('2d'); c.setTransform(dpr, 0, 0, dpr, 0, 0);
+      c.lineWidth = 2.4; c.lineCap = 'round'; c.lineJoin = 'round'; c.strokeStyle = '#131e29';
+      if (data) { const im = new Image(); im.onload = () => c.drawImage(im, 0, 0, r.width, r.height); im.src = data; }
+    };
+    requestAnimationFrame(fit);
+    let drawing = false, last = null;
+    const pt = e => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+    cv.addEventListener('pointerdown', e => { drawing = true; last = pt(e); cv.setPointerCapture(e.pointerId);
+      const c = cv.getContext('2d'); c.beginPath(); c.arc(last[0], last[1], 1.2, 0, 7); c.fillStyle = '#131e29'; c.fill(); });
+    cv.addEventListener('pointermove', e => { if (!drawing) return; const p = pt(e), c = cv.getContext('2d');
+      c.beginPath(); c.moveTo(last[0], last[1]); c.lineTo(p[0], p[1]); c.stroke(); last = p;
+      if (!this.state.signed) this.setState({ signed: true }); });
+    const end = () => { drawing = false; };
+    cv.addEventListener('pointerup', end); cv.addEventListener('pointercancel', end);
+  }
+  clearSig = () => { if (this.cv) { const c = this.cv.getContext('2d'); c.save(); c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, this.cv.width, this.cv.height); c.restore(); } this.setState({ signed: false }); };
+  startScan(patch) {
+    clearTimeout(this.t);
+    this.setState({ ...patch, scan: 'scanning' });
+    this.t = setTimeout(() => this.setState(s => ({ scan: 'done', f: { ...s.f, ...SAMPLE } })), 1800);
+  }
+  onFile = e => {
+    const file = e.target.files && e.target.files[0]; if (!file) return;
+    const isPdf = file.type === 'application/pdf';
+    if (this.state.idImg) URL.revokeObjectURL(this.state.idImg);
+    this.startScan({ idImg: isPdf ? null : URL.createObjectURL(file), idFileName: file.name, isPdf, isSample: false });
+    e.target.value = '';
+  };
+  validate1() {
+    const f = this.state.f, e = {};
+    if (!f.name.trim()) e.name = 'שדה חובה';
+    if (!/^\d{9}$/.test(f.idNum.trim())) e.idNum = f.idNum ? 'ת.ז חייבת לכלול 9 ספרות' : 'שדה חובה';
+    if (!f.address.trim()) e.address = 'שדה חובה';
+    const ph = f.phone.replace(/[\s-]/g, '');
+    if (!/^0\d{8,9}$/.test(ph)) e.phone = f.phone ? 'מספר טלפון לא תקין' : 'שדה חובה';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email.trim())) e.email = f.email ? 'כתובת דוא"ל לא תקינה' : 'שדה חובה';
+    return e;
+  }
+  validate2() {
+    const { car, trip } = this.state, e = {};
+    if (!car.model) e.model = true;
+    if (!car.plate) e.plate = true;
+    ['kmOut', 'dOut', 'tOut', 'dIn', 'tIn'].forEach(k => { if (!trip[k]) e[k] = true; });
+    if (trip.kmIn !== '' && trip.kmOut !== '' && Number(trip.kmIn) < Number(trip.kmOut)) e.kmIn = true;
+    if (trip.dIn && trip.dOut && trip.tIn && trip.tOut && (trip.dIn + trip.tIn) <= (trip.dOut + trip.tOut)) { e.dIn = true; e.tIn = true; e.order = true; }
+    return e;
+  }
+  renderVals() {
+    const s = this.state, step = s.step;
+    const salesName = this.props.salesName ?? 'אבי לוי';
+    const e1 = s.tried1 ? this.validate1() : {};
+    const e2 = s.tried2 ? this.validate2() : {};
+    const scanMissing = s.tried1 && s.scan !== 'done';
+    const set = (grp, k) => ev => { const v = ev.target.value; this.setState(st => ({ [grp]: { ...st[grp], [k]: v } })); };
+    const on = {
+      name: set('f', 'name'), idNum: set('f', 'idNum'), address: set('f', 'address'), phone: set('f', 'phone'), email: set('f', 'email'),
+      model: ev => { const v = ev.target.value; const pl = CARS[v] || []; this.setState(st => ({ car: { model: v, plate: pl.length === 1 ? pl[0] : '' } })); },
+      plate: set('car', 'plate'),
+      kmOut: set('trip', 'kmOut'), kmIn: set('trip', 'kmIn'), dOut: set('trip', 'dOut'), tOut: set('trip', 'tOut'), dIn: set('trip', 'dIn'), tIn: set('trip', 'tIn')
+    };
+    const vs = {}, err = {};
+    ['name', 'idNum', 'address', 'phone', 'email'].forEach(k => { vs[k] = e1[k] ? 'Error' : 'None'; err[k] = e1[k] || ''; });
+    const vs2 = {};
+    ['kmOut', 'kmIn', 'dOut', 'tOut', 'dIn', 'tIn'].forEach(k => { vs2[k] = e2[k] ? 'Error' : 'None'; });
+    const err2 = { model: !!e2.model, plate: !!e2.plate, dInText: e2.order ? 'ההחזרה חייבת להיות אחרי המסירה' : 'שדה חובה', tInText: e2.order ? ' ' : 'שדה חובה' };
+    const ok1 = s.scan === 'done' && !Object.keys(this.validate1()).length;
+    const ok2 = !Object.keys(this.validate2()).length;
+    const avail = n => n === 1 || (n === 2 && ok1) || (n === 3 && ok1 && ok2);
+    const goTo = n => {
+      if (n === step) return;
+      if (n < step || avail(n)) { if (n === 3) this.cv = null; this.setState({ step: n, ...(n === 3 ? { signed: false } : {}) }); return; }
+      if (!ok1) this.setState({ tried1: true, step: 1 }); else this.setState({ tried2: true, step: 2 });
+    };
+    const titles = [['פרטי לקוח', 'סריקת ת.ז ופרטי קשר'], ['פרטי נסיעה', 'רכב, ק"מ ומועדים'], ['חתימה ואישור', 'סיכום והפקת מסמך']];
+    const steps = titles.map(([title, sub], i) => {
+      const n = i + 1, cur = n === step, done = n < step, open = !cur && !done && avail(n);
+      return { num: n, title, sub, done, notDone: !done, notLast: n < 3,
+        bg: done || cur ? 'var(--sapButton_Emphasized_Background)' : 'var(--sapTileBackground,#fff)',
+        fg: done || cur ? '#fff' : open ? 'var(--sapButton_Emphasized_Background)' : 'var(--sapContent_LabelColor)',
+        bd: done || cur || open ? 'var(--sapButton_Emphasized_Background)' : 'var(--sapField_BorderColor)',
+        hint: open ? 'מעבר לשלב ' + n : '',
+        weight: cur ? 700 : 400, line: done ? 'var(--sapButton_Emphasized_Background)' : 'var(--sapList_BorderColor,#e5e5e5)',
+        cursor: cur ? 'default' : 'pointer', go: () => goTo(n) };
+    });
+    const next = () => {
+      if (step === 1) {
+        this.setState({ tried1: true });
+        if (s.scan !== 'done' || Object.keys(this.validate1()).length) return;
+        this.setState({ step: 2 });
+      } else if (step === 2) {
+        this.setState({ tried2: true });
+        if (Object.keys(this.validate2()).length) return;
+        this.cv = null; this.setState({ step: 3, signed: false });
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+    const t = s.trip, now = new Date();
+    const plates = CARS[s.car.model] || [];
+    return {
+      step, isStep1: step === 1, isStep2: step === 2, isStep3: step === 3, notStep3: step !== 3, canBack: step > 1,
+      steps, docNo: s.docNo, salesName, salesInitials: salesName.split(' ').map(w => w[0]).join(''),
+      cardBody: { padding: '4px 16px 20px' },
+      f: s.f, on, vs, err, notScanned: s.scan !== 'done', fromIdPh: s.scan === 'scanning' ? 'מחלץ נתונים…' : 'ימולא מסריקת ת.ז', manualPh: s.scan === 'scanning' ? 'מחלץ נתונים…' : 'הזנה ידנית או סריקת ת.ז', stripStyle: { flex: '1 1 320px' },
+      idIcon: s.scan === 'done' ? 'business-card' : undefined,
+      camRef: this.camRef, fileRef: this.fileRef, onFile: this.onFile,
+      openCam: () => this.camRef.current && this.camRef.current.click(),
+      openFile: () => this.fileRef.current && this.fileRef.current.click(),
+      useSample: () => this.startScan({ idImg: null, isPdf: false, isSample: true, idFileName: '' }),
+      demo: this.props.showSampleScan ?? true,
+      scanNone: s.scan === 'none', hasScanView: s.scan !== 'none', scanning: s.scan === 'scanning', scanDone: s.scan === 'done', scanMissing,
+      showImg: !!s.idImg, showPdf: s.isPdf, showSample: s.isSample, idImg: s.idImg, idImgBg: s.idImg ? `url("${s.idImg}")` : 'none', idFileName: s.idFileName, sample: SAMPLE,
+      scanBeam: React.createElement('span', { key: 'beam', style: { position: 'absolute', left: 0, right: 0, height: 2, background: 'var(--sapButton_Emphasized_Background)', boxShadow: '0 0 12px 2px rgba(0,112,242,.6)', animation: 'scanline 1.2s ease-in-out infinite alternate' } }),
+      car: s.car, trip: t, vs2, err2, models: Object.keys(CARS), plates, noModel: !s.car.model,
+      plateOpacity: s.car.model ? 1 : 0.5, platePh: s.car.model ? 'בחרו מספר רישוי' : 'בחרו דגם תחילה',
+      selBd: { model: e2.model ? 'var(--sapErrorBorderColor)' : 'var(--sapField_BorderColor)', plate: e2.plate ? 'var(--sapErrorBorderColor)' : 'var(--sapField_BorderColor)' },
+      next, back: () => { this.setState({ step: step - 1 }); }, nextLabel: 'הבא',
+      todayStr: `${pad(now.getDate())}/${pad(now.getMonth() + 1)}/${now.getFullYear()}`,
+      deductible: (this.props.deductible ?? 10000).toLocaleString('he-IL'),
+      docCustomer: [{ k: 'שם מלא', v: s.f.name }, { k: 'ת.ז', v: s.f.idNum }, { k: 'כתובת מגורים', v: s.f.address }, { k: 'טלפון', v: s.f.phone }, { k: 'דוא"ל', v: s.f.email }],
+      docTrip: [{ k: 'דגם', v: 'Porsche ' + s.car.model }, { k: 'מספר רישוי', v: s.car.plate }, { k: 'ק"מ במסירה', v: t.kmOut ? Number(t.kmOut).toLocaleString('he-IL') : '—' }, { k: 'ק"מ בחזרה', v: t.kmIn ? Number(t.kmIn).toLocaleString('he-IL') : '—' },
+        { k: 'מסירה', v: heDate(t.dOut) + ' · ' + t.tOut }, { k: 'החזרה', v: heDate(t.dIn) + ' · ' + t.tIn }],
+      sigRef: this.sigRef, clearSig: this.clearSig, notSigned: !s.signed,
+      sigBorderStyle: s.signed ? 'solid' : 'dashed', sigBorderColor: s.signed ? '#d9dee3' : 'var(--sapField_BorderColor)',
+      signStripDesign: s.signed ? 'Positive' : 'Information',
+      signStripText: s.signed ? 'המסמך נחתם. ניתן להפיק PDF.' : 'יש לעבור על פרטי המסמך עם הלקוח ולהחתים אותו על גבי הטאבלט.',
+      printDoc: () => window.print()
+    };
+  }
+}
+</script>
+</body>
+</html>
